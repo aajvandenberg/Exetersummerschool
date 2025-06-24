@@ -22,6 +22,10 @@ class Subsession(BaseSubsession): #This is where I define variables on the subse
         for group in self.get_groups():
             group.setup_round()
 
+    def compute_outcome(self):
+        for group in self.get_groups():
+            group.compute_outcome()
+
 
 class Group(BaseGroup): #This is where I define variables on the group level
     prize = models.CurrencyField() #Stores the value of the prize of the lottery
@@ -31,16 +35,36 @@ class Group(BaseGroup): #This is where I define variables on the group level
         for player in self.get_players():
             player.setup_round()
 
+    def compute_outcome(self):
+        total = sum(player.tickets_purchased for player in self.get_players())
+        for player in self.get_players():
+            try:
+                player.prize_won = player.tickets_purchased / total
+            except ZeroDivisionError:
+                player.prize_won = 1 / len(self.get_players())
+
+            player.earnings = (
+                    player.endowment -
+                    player.tickets_purchased * player.cost_per_ticket +
+                    self.prize * player.prize_won
+            )
+
+
 
 class Player(BasePlayer): #This is where I define variables on the player (i.e. individual) level
     endowment = models.CurrencyField()
     cost_per_ticket = models.CurrencyField()
     tickets_purchased = models.IntegerField() #The reason why I use models.IntegerField() and not tickets_purchased: int is because it links the input to the data or something like that.
+    prize_won = models.FloatField()
+    earnings = models.CurrencyField()
 
     def setup_round(self):
         self.endowment = C.ENDOWMENT
         self.cost_per_ticket = C.COST_PER_TICKET
 
+    @property
+    def coplayer(self):
+        return self.group.get_player_by_id(3-self.id_in_group)
 
 
 
@@ -66,7 +90,10 @@ class Decision(Page):
 
 
 class DecisionWaitPage(WaitPage):
-    pass
+    wait_for_all_groups = True
+
+    # @staticmethod
+    # def after_all_players_arrive(subsession):
 
 
 class Results(Page):

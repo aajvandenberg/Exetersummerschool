@@ -1,0 +1,13 @@
+{{ block title }}
+    Results
+{{ endblock }}
+
+{{ block content }}
+
+You purchased {{ player.tickets_purchased }} tickets.
+
+The other player purchased {{ player.coplayer.tickets_purchased }} tickets.
+You won {{ player.prize_won }} of the prize.
+your earnings are {{ player.earnings }}.
+    {{next_button }}
+{{ endblock }}
