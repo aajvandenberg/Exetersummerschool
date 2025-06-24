@@ -8,7 +8,7 @@ A splash-screen welcome page for the experiment
 class C(BaseConstants):
     NAME_IN_URL = "contest"
     PLAYERS_PER_GROUP = None
-    NUM_ROUNDS = 1
+    NUM_ROUNDS = 2
     ENDOWMENT = Currency(10)
     COST_PER_TICKET = Currency(5)
     PRICE = Currency(8)
@@ -61,7 +61,8 @@ class Intro(Page):
 
 
 class Decision(Page):
-    pass
+    form_model = "player"
+    form_fields = ["tickets_purchased"]
 
 
 class DecisionWaitPage(WaitPage):
