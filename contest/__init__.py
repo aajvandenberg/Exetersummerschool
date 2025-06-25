@@ -16,9 +16,12 @@ class C(BaseConstants): #Here is where I can initialize variables that make up t
 
 class Subsession(BaseSubsession): #This is where I define variables on the subsession (i.e. rounds) level
     is_paid = models.BooleanField()
+    csf = models.StringField(choices=["share, allpay"])
 
     def setup_round(self):
         self.is_paid = self.round_number % 2 == 1 #here I set up a rule for which period gets paid (in this case all odd periods)
+        self.session.config["contest_csf"]
+        self.csf = "allpay"
         for group in self.get_groups():
             group.setup_round()
 
@@ -35,7 +38,7 @@ class Group(BaseGroup): #This is where I define variables on the group level
         for player in self.get_players():
             player.setup_round()
 
-    def compute_outcome(self):
+    def compute_outcome_share(self):
         total = sum(player.tickets_purchased for player in self.get_players())
         for player in self.get_players():
             try:
@@ -43,14 +46,32 @@ class Group(BaseGroup): #This is where I define variables on the group level
             except ZeroDivisionError:
                 player.prize_won = 1 / len(self.get_players())
 
-            player.earnings = (
-                player.endowment -
-                player.tickets_purchased * player.cost_per_ticket +
-                self.prize * player.prize_won
-            )
-            if self.subsession.is_paid: #Here I check whether this round is paid
-                player.payoff = player.earnings
 
+
+    def compute_outcome_allpay(self):
+        max_tickets = max(player.tickets_purchased for player in self.get_players())
+        num_tied = len([player for player in self.get_players()
+                       if player.tickets_purchased == max_tickets])
+        for player in self.get_players():
+            if player.tickets_purchased == max_tickets:
+                player.prize_won = 1 / num_tied
+            else:
+                player.prize_won = 0
+
+
+    def compute_outcome(self):
+        if self.subsession.csf == "share":
+            self.compute_outcome_share()
+        elif self.subsession.csf == "allpay":
+            self.compute_outcome_allpay()
+        for player in self.get_players():
+            player.earnings = (
+                    player.endowment -
+                    player.tickets_purchased * player.cost_per_ticket +
+                    self.prize * player.prize_won
+            )
+        if self.subsession.is_paid:  # Here I check whether this round is paid
+            player.payoff = player.earnings
 
 
 class Player(BasePlayer): #This is where I define variables on the player (i.e. individual) level
@@ -61,7 +82,7 @@ class Player(BasePlayer): #This is where I define variables on the player (i.e. 
     earnings = models.CurrencyField()
 
     def setup_round(self):
-        self.endowment = C.ENDOWMENT
+        self.endowment = self.session.config.get("contest_endowment", C.ENDOWMENT) #This is saying that if we specified the endowment in the settings.py, follow that. Otherwise, follow C.ENDOWMENT
         self.cost_per_ticket = C.COST_PER_TICKET
 
     @property #Properties are like variables that are not in the resulting dataset and are derived from variables above.
@@ -72,6 +93,8 @@ class Player(BasePlayer): #This is where I define variables on the player (i.e. 
     def max_tickets_affordable(self):
         return int(self.endowment / self.cost_per_ticket)
 
+    def in_paid_rounds(self):
+        return [rd for rd in self.in_all_rounds() if rd.is_paid]
 
 # def creating_session(subsession): #this function is called at the start of every round (and at the moment of creating the session) and is an alternative to making a waitpage as in SetupRound
 #     subsession.setup_round()
@@ -86,7 +109,9 @@ class SetupRound(WaitPage):
 
 
 class Intro(Page):
-    pass
+    @staticmethod
+    def is_displayed(player):
+        return player.round_number == 1
 
 
 class Decision(Page):
@@ -118,7 +143,9 @@ class Results(Page):
 
 
 class EndBlock(Page):
-    pass
+    @staticmethod
+    def is_displayed(player):
+        return player.round_number == C.NUM_ROUNDS
 
 
 page_sequence = [
