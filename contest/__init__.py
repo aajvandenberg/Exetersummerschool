@@ -11,21 +11,28 @@ class C(BaseConstants): #Here is where I can initialize variables that make up t
     NAME_IN_URL = "contest"
     PLAYERS_PER_GROUP = None
     NUM_ROUNDS = 2
+    NUM_PAID_ROUNDS = 1
     ENDOWMENT = Currency(10)
     COST_PER_TICKET = Currency(5)
     PRICE = Currency(8)
 
 
 class Subsession(BaseSubsession): #This is where I define variables on the subsession (i.e. rounds) level
-    is_paid = models.BooleanField()
+    is_paid = models.BooleanField(initial=False)
     csf = models.StringField(choices=["share, allpay, lottery"])
 
     def setup_round(self):
-        self.is_paid = self.round_number % 2 == 1 #here I set up a rule for which period gets paid (in this case all odd periods)
+        #self.is_paid = self.round_number % 2 == 1 #here I set up a rule for which period gets paid (in this case all odd periods)
+        if self.round_number == 1:
+            self.setup_paid_rounds()
         self.csf = self.session.config["contest_csf"]
         for group in self.get_groups():
             group.setup_round()
 
+    def setup_paid_rounds(self):
+         for rd in random.sample(self.in_rounds(1,C.NUM_ROUNDS), #This randomly (without replacement) chooses NUM_PAID_ROUNDS from all rounds to be paid. Better than in_all_rounds, as it only goes up to the current round.
+                                 k=C.NUM_PAID_ROUNDS):
+             rd.is_paid = True
     def compute_outcome(self):
         for group in self.get_groups():
             group.compute_outcome()
