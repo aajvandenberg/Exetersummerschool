@@ -48,6 +48,7 @@ dict(
         num_demo_participants=2,
         contest_csf = "lottery",
         contest_endowment = 10,
+        contest_group_randomly = True,
     ),
 ]
 

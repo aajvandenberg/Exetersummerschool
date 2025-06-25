@@ -22,10 +22,12 @@ class Subsession(BaseSubsession): #This is where I define variables on the subse
     csf = models.StringField(choices=["share, allpay, lottery"])
 
     def setup_round(self):
-        #self.is_paid = self.round_number % 2 == 1 #here I set up a rule for which period gets paid (in this case all odd periods)
+        #self.is_paid = self.round_number % 2 == 1 #here I set up a rule for which period gets paid (in this case all odd periods). First make sure everything works with deterministic code before adding randomization.
         if self.round_number == 1:
             self.setup_paid_rounds()
         self.csf = self.session.config["contest_csf"]
+        if self.session.config.get("contest_group_randomly", False):
+            self.group_randomly()
         for group in self.get_groups():
             group.setup_round()
 
