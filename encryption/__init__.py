@@ -14,7 +14,7 @@ class C(BaseConstants):
     NAME_IN_URL = 'encryption'
     PLAYERS_PER_GROUP = None
     NUM_ROUNDS = 3
-    TIME_FOR_TASK = 30
+    TIME_FOR_TASK = 300
     LOOKUP_TABLES = [
         "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
         "ABCDEFGHIJKLMNOPQRSTUVWXZY",
@@ -23,6 +23,7 @@ class C(BaseConstants):
 
 
 class Subsession(BaseSubsession):
+    random_seed = models.IntegerField()
     payment_per_correct = models.CurrencyField()
     lookup_table = models.StringField()
     time_for_task = models.FloatField()
