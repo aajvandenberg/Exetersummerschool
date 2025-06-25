@@ -1,3 +1,5 @@
+import random
+
 from otree.api import *
 
 doc = """
@@ -16,12 +18,11 @@ class C(BaseConstants): #Here is where I can initialize variables that make up t
 
 class Subsession(BaseSubsession): #This is where I define variables on the subsession (i.e. rounds) level
     is_paid = models.BooleanField()
-    csf = models.StringField(choices=["share, allpay"])
+    csf = models.StringField(choices=["share, allpay, lottery"])
 
     def setup_round(self):
         self.is_paid = self.round_number % 2 == 1 #here I set up a rule for which period gets paid (in this case all odd periods)
-        self.session.config["contest_csf"]
-        self.csf = "allpay"
+        self.csf = self.session.config["contest_csf"]
         for group in self.get_groups():
             group.setup_round()
 
@@ -37,6 +38,16 @@ class Group(BaseGroup): #This is where I define variables on the group level
         self.prize = C.PRICE
         for player in self.get_players():
             player.setup_round()
+
+    def compute_outcome_lottery(self):
+        try:
+            winner = random.choices(self.get_players(), k=1,
+                                weights=[p.tickets_purchased for p in self.get_players()])[0]
+        except ValueError:
+            winner = random.choice(self.get_players())
+
+        for player in self.get_players():
+            player.prize_won = 1 if player == winner else 0
 
     def compute_outcome_share(self):
         total = sum(player.tickets_purchased for player in self.get_players())
@@ -64,6 +75,8 @@ class Group(BaseGroup): #This is where I define variables on the group level
             self.compute_outcome_share()
         elif self.subsession.csf == "allpay":
             self.compute_outcome_allpay()
+        elif self.subsession.csf == "lottery":
+            self.compute_outcome_lottery()
         for player in self.get_players():
             player.earnings = (
                     player.endowment -
