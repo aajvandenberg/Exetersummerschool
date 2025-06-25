@@ -18,7 +18,7 @@ class Subsession(BaseSubsession): #This is where I define variables on the subse
     is_paid = models.BooleanField()
 
     def setup_round(self):
-        self.is_paid = True
+        self.is_paid = self.round_number % 2 == 1 #here I set up a rule for which period gets paid (in this case all odd periods)
         for group in self.get_groups():
             group.setup_round()
 
@@ -48,6 +48,8 @@ class Group(BaseGroup): #This is where I define variables on the group level
                 player.tickets_purchased * player.cost_per_ticket +
                 self.prize * player.prize_won
             )
+            if self.subsession.is_paid: #Here I check whether this round is paid
+                player.payoff = player.earnings
 
 
 
