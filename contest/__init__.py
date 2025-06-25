@@ -5,7 +5,7 @@ A splash-screen welcome page for the experiment
 """
 
 
-class C(BaseConstants):
+class C(BaseConstants): #Here is where I can initialize variables that make up the experimental design.
     NAME_IN_URL = "contest"
     PLAYERS_PER_GROUP = None
     NUM_ROUNDS = 2
@@ -44,9 +44,9 @@ class Group(BaseGroup): #This is where I define variables on the group level
                 player.prize_won = 1 / len(self.get_players())
 
             player.earnings = (
-                    player.endowment -
-                    player.tickets_purchased * player.cost_per_ticket +
-                    self.prize * player.prize_won
+                player.endowment -
+                player.tickets_purchased * player.cost_per_ticket +
+                self.prize * player.prize_won
             )
 
 
@@ -62,10 +62,13 @@ class Player(BasePlayer): #This is where I define variables on the player (i.e. 
         self.endowment = C.ENDOWMENT
         self.cost_per_ticket = C.COST_PER_TICKET
 
-    @property
+    @property #Properties are like variables that are not in the resulting dataset and are derived from variables above.
     def coplayer(self):
         return self.group.get_player_by_id(3-self.id_in_group)
 
+    @property
+    def max_tickets_affordable(self):
+        return int(self.endowment / self.cost_per_ticket)
 
 
 # def creating_session(subsession): #this function is called at the start of every round (and at the moment of creating the session) and is an alternative to making a waitpage as in SetupRound
@@ -87,13 +90,25 @@ class Intro(Page):
 class Decision(Page):
     form_model = "player"
     form_fields = ["tickets_purchased"]
+    @staticmethod
+    def error_message(player, values):
+        if values['tickets_purchased'] < 0:
+            return "You cannot buy a negative number of tickets."
+        if values['tickets_purchased'] > player.max_tickets_affordable:
+            return (
+                f"Buying {values['tickets_purchased']} tickets would cost "
+                f"{values['tickets_purchased'] * player.cost_per_ticket} "
+                f"which is more than your endowment of {player.endowment}."
+            )
+        return None
 
 
 class DecisionWaitPage(WaitPage):
     wait_for_all_groups = True
 
-    # @staticmethod
-    # def after_all_players_arrive(subsession):
+    @staticmethod
+    def after_all_players_arrive(subsession):
+        subsession.compute_outcome()
 
 
 class Results(Page):
