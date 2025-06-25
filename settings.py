@@ -50,6 +50,13 @@ dict(
         contest_endowment = 10,
         contest_group_randomly = True,
     ),
+dict(
+        name="encryption",
+        num_demo_participants=2,
+        app_sequence=[
+            "encryption"
+        ],
+    ),
 ]
 
 # if you set a property in SESSION_CONFIG_DEFAULTS, it will be inherited by all configs
