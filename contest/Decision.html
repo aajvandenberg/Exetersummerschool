@@ -3,12 +3,25 @@
 {{ endblock }}
 {{ block content }}
 
-Your endowment is {{ player.endowment }}.
-Each ticket costs {{ player.cost_per_ticket }}.
-The prize is worth {{ group.prize }}.
+<ol>
+<li> Your endowment is {{ player.endowment }}. </li>
+<li> Each ticket costs {{ player.cost_per_ticket }}. </li>
+<li> The prize is worth {{ group.prize }}. </li>
+</ol>
 
+<input type="range" class="form-range range-hidden-slider" min ="0" max = "{{ player.max_tickets_affordable }}" name = "tickets_purchased">
 
-    {{ formfields }}
-    {{ next_button }}
+<p class="text-center">
+    Number of tickets selected to purchase:
+    <span id="tickets_selected"></span>
+<!--    need javascript code here to show the number...-->
+</p>
+
+<div class="row justify-content-center">
+    <div class="col-4 p-3">
+        <button class="otree-btn-next btn btn-secondary w-100">Confirm purchase</button>
+    </div>
+</div>
+<!--add disable to class and then enable the button through javascript when the slides is used-->
 {{ endblock }}
 
