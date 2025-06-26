@@ -115,9 +115,13 @@ class Player(BasePlayer): #This is where I define variables on the player (i.e. 
     def max_tickets_affordable(self):
         return int(self.endowment / self.cost_per_ticket)
 
+    @property
     def in_paid_rounds(self):
-        return [rd for rd in self.in_all_rounds() if rd.is_paid]
+        return [rd for rd in self.in_all_rounds() if rd.subsession.is_paid]
 
+    @property
+    def total_payoff(self):
+        return sum(p.payoff for p in self.in_all_rounds())
 # def creating_session(subsession): #this function is called at the start of every round (and at the moment of creating the session) and is an alternative to making a waitpage as in SetupRound
 #     subsession.setup_round()
 
@@ -168,6 +172,14 @@ class EndBlock(Page):
     @staticmethod
     def is_displayed(player):
         return player.round_number == C.NUM_ROUNDS
+
+    @staticmethod
+    def before_next_page(player, timeout_happened):
+        player.participant.vars["earnings_contest"] = player.total_payoff
+
+    @staticmethod
+    def before_next_page(player, timeout_happened):
+        player.participant.vars["earnings_encryption"] = player.total_payoff
 
 
 page_sequence = [

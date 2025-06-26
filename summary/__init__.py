@@ -15,8 +15,10 @@ class C(BaseConstants):
 class Subsession(BaseSubsession):
     def collect_results(self):
         for player in self.get_players():
-            player.earnings_contest = Currency(5)
-            player.earnings_encryption = Currency(1.5)
+            player.earnings_contest = player.participant.vars.get('earnings_contest',
+                                                                  Currency(0))
+            player.earnings_encryption = player.participant.vars.get('earnings_encryption',
+                                                                     Currency(0))
 
 
 class Group(BaseGroup):

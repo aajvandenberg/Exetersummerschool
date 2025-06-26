@@ -71,6 +71,10 @@ class Player(BasePlayer):
     def response_fields(self): #HELP
         return["response_1", "response_2", "response_3","response_4","response_5"]
 
+    @property
+    def total_payoff(self):
+        return sum(p.payoff for p in self.in_all_rounds())
+
     def check_response(self):
         self.is_correct = self.response == self.subsession.correct_response
         if self.is_correct:

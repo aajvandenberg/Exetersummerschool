@@ -64,6 +64,17 @@ dict(
             "summary"
         ],
     ),
+dict(
+        name="full_experiment",
+        num_demo_participants=2,
+        app_sequence=[
+            "contest",
+            "encryption",
+            "summary"
+        ],
+        contest_csf = "share",
+        contest_endowment = 20,
+    ),
 ]
 
 # if you set a property in SESSION_CONFIG_DEFAULTS, it will be inherited by all configs
