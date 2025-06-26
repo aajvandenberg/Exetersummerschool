@@ -1,12 +1,44 @@
 {{ block title }}
     Decision
 {{ endblock }}
+
+{{ block styles }}
+<style>
+    .word {
+        color: dodgerblue;
+        font-size: 2.5rem;
+        font-family: "Comic Sans MS";
+    }
+</style>
+{{ endblock }}
+
 {{ block content }}
 
 The table is {{ subsession.lookup_dict }}
 
-The word is {{ subsession.word }}
+<table class="table">
+    <tread>
+        <tr class="text-center fw-bold">
+            {{ for letter in subsession.lookup_dict.keys }}
+            <td>{{ letter }}</td>
+            {{ endfor }}
+        </tr>
+    </tread>
+    <tbody>
+        <tr>
+            {{ for letter in subsession.lookup_dict.values }}
+            <td>{{ letter }}</td>
+            {{ endfor }}
+        </tr>
+    </tbody>
+</table>
+
+<div class="row>">
+    <div class="col-12 text-center word">
+        {{ subsession.word }}
+    </div>
+</div>
+
     {{ formfields }}
     {{ next_button }}
-
 {{ endblock }}
